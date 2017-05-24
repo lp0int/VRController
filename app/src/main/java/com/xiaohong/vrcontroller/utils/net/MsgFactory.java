@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.xiaohong.vrcontroller.Constants;
 import com.xiaohong.vrcontroller.Interface.DevicesNotifyRefresh;
 import com.xiaohong.vrcontroller.Variable;
+import com.xiaohong.vrcontroller.bean.DeviceBean;
 import com.xiaohong.vrcontroller.bean.PadDeviceInfo;
 import com.xiaohong.vrcontroller.bean.RequestObject;
 import com.xiaohong.vrcontroller.bean.ResponcePlayCommand;
@@ -50,6 +51,11 @@ public class MsgFactory {
             mRequestObject = mGson.fromJson(msg, RequestObject.class);
             mRequestObjectJson = mRequestObject.getRequestObjectJson();
         } catch (Exception e) {
+            String time = msg.split("\\|")[0];
+            String power = msg.split("\\|")[1];
+            DeviceBean deviceBean = Variable.getDevicesByIp(ip);
+            deviceBean.getVRDeviceInfo().setRemainingPower(Integer.parseInt(power));
+            Variable.setDeviceInfoByIp(ip,deviceBean.getVRDeviceInfo());
             return;
         }
         switch (mRequestObject.getRequestObjectType()) {
@@ -71,6 +77,13 @@ public class MsgFactory {
                     Variable.setVideoCurrentTimeByEggNum(Variable.getDevicesByIp(ip).getVRDeviceInfo().getEggChairNum(),-1);
                     Variable.setDevicePlayVideoStatusByIp(ip, Constants.DEVICES_PLAYVIDEO_STATUS_STANDBY);
                 }
+                break;
+            case 0x04:
+                String time = msg.split("\\|")[0];
+                String power = msg.split("\\|")[1];
+                DeviceBean deviceBean = Variable.getDevicesByIp(ip);
+                deviceBean.getVRDeviceInfo().setRemainingPower(Integer.parseInt(power));
+                Variable.setDeviceInfoByIp(ip,deviceBean.getVRDeviceInfo());
                 break;
             default:
                 break;

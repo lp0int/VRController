@@ -104,6 +104,8 @@ public class DeviceManagementAdapter extends RecyclerView.Adapter<DeviceManageme
             holder.videoProgress.setProgress(0);
             holder.videoTime.setText(Utils.ConversionMsToSecond(chairStatusBean.getCurrentTime()) +
                     "/" + Utils.ConversionMsToSecond(chairStatusBean.getPlayVideoTime()));
+            if (chairStatusBean.getCurrentTime() == -1)
+                holder.videoTime.setText("00:00/00:00");
         }
         holder.imgBtnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,23 +139,32 @@ public class DeviceManagementAdapter extends RecyclerView.Adapter<DeviceManageme
         Thread videoProgressThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                int i = (int) chairStatusBean.getCurrentTime();
+                float videoTimeSecond = chairStatusBean.getPlayVideoTime() / 1000;
+                float i = (float) chairStatusBean.getCurrentTime();
                 if (i == -1) {
                     holder.videoProgress.setProgress(0);
                     holder.videoTime.setText("--:--/--:--");
                     return;
                 }
-                while (i < chairStatusBean.getPlayVideoTime() / 1000) {
+                while (i <= videoTimeSecond) {
+                    int videoProgress = (int) (i / videoTimeSecond * 100);
+                    holder.videoProgress.setProgress(videoProgress);
+                    Variable.setVideoCurrentTimeByEggNum(chairStatusBean.getChair().getEgg_chair_num(), (int) i);
+                    ((Activity) mContext).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                                holder.videoTime.setText(Utils.ConversionMsToSecond(chairStatusBean.getCurrentTime() * 1000) +
+                                        "/" + Utils.ConversionMsToSecond(chairStatusBean.getPlayVideoTime()));
+                        }
+                    });
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    holder.videoProgress.setProgress(i);
-                    Variable.setVideoCurrentTimeByEggNum(chairStatusBean.getChair().getEgg_chair_num(), i);
                     i++;
                 }
-                Variable.setVideoCurrentTimeByEggNum(chairStatusBean.getChair().getEgg_chair_num(),-1);
+                Variable.setVideoCurrentTimeByEggNum(chairStatusBean.getChair().getEgg_chair_num(), -1);
             }
         });
         videoProgressThread.start();
