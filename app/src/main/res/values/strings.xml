@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">VR平台管理系统</string>
+    <string name="app_name_en">VR Platform Management System</string>
+    <string name="app_copyright">版权所有 © 2017上海小鸿网络科技有限公司 沪ICP备15032981号-1</string>
+    <!-- ActivityLogin -->
+    <string name="login">登录</string>
+    <string name="username">账号</string>
+    <string name="passwd">密码</string>
+    <!-- ActivityHome -->
+    <string name="home">首页</string>
+    <string name="staff_management">员工管理</string>
+    <string name="device_management">设备管理</string>
+    <string name="report_management">报表管理</string>
+    <string name="version_unknown">unknownVersionName</string>
+    <!-- 删除 -->
+    <string name="delete">删除</string>
+    <string name="reset">重置</string>
+</resources>

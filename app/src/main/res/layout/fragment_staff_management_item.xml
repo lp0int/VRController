@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/lin_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+
+    <TextView
+        android:id="@+id/txt_item"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:singleLine="true"/>
+
+    <ImageView
+        android:id="@+id/img_edit"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="4dp"
+        android:layout_toRightOf="@+id/txt_item"
+        android:background="@mipmap/icon_edit"
+        android:visibility="gone"/>
+
+    <View
+        android:id="@+id/line_left"
+        android:layout_width="4dp"
+        android:layout_height="40dp"
+        android:layout_alignParentLeft="true"
+        android:background="#1DD5F0"
+        android:visibility="gone"/>
+
+    <View
+        android:id="@+id/line_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_alignParentBottom="true"
+        android:background="#E8E8E8"/>
+
+    <View
+        android:id="@+id/point_center"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:id="@+id/txt_del"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="12dp"
+        android:layout_toLeftOf="@+id/point_center"
+        android:text="@string/delete"
+        android:textColor="#FF4747"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/txt_reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="12dp"
+        android:layout_toRightOf="@+id/point_center"
+        android:text="@string/reset"
+        android:textColor="#FF4747"
+        android:visibility="gone"/>
+</RelativeLayout>
