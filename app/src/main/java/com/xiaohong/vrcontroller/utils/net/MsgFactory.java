@@ -69,7 +69,6 @@ public class MsgFactory {
                 break;
             case 0x03:
                 ResponcePlayCommand mResponcePlayCommand = mGson.fromJson(mRequestObjectJson, ResponcePlayCommand.class);
-                Variable.setVideoTimeByDeviceIp(ip,mResponcePlayCommand.getVideoTime());
                 if (mResponcePlayCommand.getVideoType() == 0x00) {
                     Variable.setVideoCurrentTimeByEggNum(Variable.getDevicesByIp(ip).getVRDeviceInfo().getEggChairNum(),0);
                     Variable.setDevicePlayVideoStatusByIp(ip, Constants.DEVICES_PLAYVIDEO_STATUS_OK);
@@ -77,6 +76,7 @@ public class MsgFactory {
                     Variable.setVideoCurrentTimeByEggNum(Variable.getDevicesByIp(ip).getVRDeviceInfo().getEggChairNum(),-1);
                     Variable.setDevicePlayVideoStatusByIp(ip, Constants.DEVICES_PLAYVIDEO_STATUS_STANDBY);
                 }
+                Variable.setVideoTimeByDeviceIp(ip,mResponcePlayCommand.getVideoTime());
                 break;
             case 0x04:
                 String time = msg.split("\\|")[0];

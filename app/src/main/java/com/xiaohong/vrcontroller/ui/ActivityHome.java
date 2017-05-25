@@ -23,6 +23,7 @@ import com.xiaohong.vrcontroller.Interface.SubscriberOnNextListener;
 import com.xiaohong.vrcontroller.R;
 import com.xiaohong.vrcontroller.Variable;
 import com.xiaohong.vrcontroller.base.BaseActivity;
+import com.xiaohong.vrcontroller.bean.EditUserBean;
 import com.xiaohong.vrcontroller.bean.FindUsersBean;
 import com.xiaohong.vrcontroller.bean.PadDeviceInfo;
 import com.xiaohong.vrcontroller.bean.RequestObject;
@@ -33,6 +34,7 @@ import com.xiaohong.vrcontroller.utils.Utils;
 import com.xiaohong.vrcontroller.utils.net.MsgFactory;
 import com.xiaohong.vrcontroller.utils.net.ServerSocketThread;
 import com.xiaohong.vrcontroller.utils.net.UdpHelper;
+import com.xiaohong.vrcontroller.utils.widget.PopWindowEditMyPwd;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +53,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
     private TextView txtNickname;
     private int lastSelectId = -1;
     private SubscriberOnNextListener findUserListener;
+    private SubscriberOnNextListener editPwdInfoListener;
     private ImageView imgLogout, imgHelp;
     private Thread sendUdpThread;
     private boolean destroy = false;
@@ -76,6 +79,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
         txtNickname = (TextView) findViewById(R.id.txt_nickname);
         txtNickname.setText(TextUtils.isEmpty(Variable.loginBean.getUser_info().get(0).getNickName())
                 ? "" : Variable.loginBean.getUser_info().get(0).getNickName());
+        txtNickname.setOnClickListener(this);
         if (!Variable.loginBean.getUser_info().get(0).getEgg_chair_id().startsWith("0")) {
             relTab2.setVisibility(View.GONE);
             relTab4.setVisibility(View.GONE);
@@ -96,7 +100,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
             @Override
             public void run() {
                 while (true) {
-                    if(destroy)
+                    if (destroy)
                         return;
                     RequestObject requestObject = new RequestObject();
                     requestObject.setRequestObjectType(Constants.REQUEST_PADDEVICEINFO);
@@ -104,11 +108,11 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
                     padDeviceInfo.setTcpPort(Constants.TCP_PORT);
                     padDeviceInfo.setIp(Utils.getLocalIpAddress(ActivityHome.this));
                     String[] strs = Variable.getChairList().split(",");
-                    if(strs.length == 1){
+                    if (strs.length == 1) {
                         ArrayList<String> arrstr = new ArrayList<String>();
                         arrstr.add(Variable.getChairNumById(Integer.parseInt(strs[0])));
                         padDeviceInfo.setEggChairList(arrstr);
-                    }else {
+                    } else {
                         ArrayList<String> chairs = new ArrayList<String>();
                         for (String s :
                                 strs) {
@@ -252,6 +256,10 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
             case R.id.img_logout:
                 finish();
                 break;
+            case R.id.txt_nickname:
+                PopWindowEditMyPwd popWindowEditMyPwd = new PopWindowEditMyPwd(ActivityHome.this, editPwdInfoListener);
+                popWindowEditMyPwd.showPopupWindow(v);
+                break;
             default:
                 break;
         }
@@ -278,6 +286,17 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
             public void onError(Throwable e) {
             }
         };
+        editPwdInfoListener = new SubscriberOnNextListener<EditUserBean>() {
+            @Override
+            public void onNext(EditUserBean editUserBean) {
+                Utils.showToastStr(ActivityHome.this, editUserBean.getContent());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+        };
     }
 
     @Override
@@ -292,7 +311,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
         return super.onKeyDown(keyCode, event);
     }
 
-    private void startTCPServer(){
+    private void startTCPServer() {
         if (Variable.serverSocketThread == null) {
             Variable.serverSocketThread = new ServerSocketThread(ActivityHome.this);
         }

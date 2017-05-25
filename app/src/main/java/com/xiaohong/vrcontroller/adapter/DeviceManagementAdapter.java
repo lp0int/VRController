@@ -131,7 +131,10 @@ public class DeviceManagementAdapter extends RecyclerView.Adapter<DeviceManageme
                         e.printStackTrace();
                     }
                 }
-                chairStatusBean.setPlayVideoType(Constants.VIDEO_TYPE_PANORAMAVIDEO);
+                if (chairStatusBean.getPlayVideoType() == Constants.VIDEO_TYPE_PANORAMAVIDEO)
+                    chairStatusBean.setPlayVideoType(Constants.VIDEO_TYPE_ORDINARYVIDEO);
+                else
+                    chairStatusBean.setPlayVideoType(Constants.VIDEO_TYPE_PANORAMAVIDEO);
                 notifyDataSetChanged();
             }
         });
@@ -153,8 +156,8 @@ public class DeviceManagementAdapter extends RecyclerView.Adapter<DeviceManageme
                     ((Activity) mContext).runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                                holder.videoTime.setText(Utils.ConversionMsToSecond(chairStatusBean.getCurrentTime() * 1000) +
-                                        "/" + Utils.ConversionMsToSecond(chairStatusBean.getPlayVideoTime()));
+                            holder.videoTime.setText(Utils.ConversionMsToSecond(chairStatusBean.getCurrentTime() * 1000) +
+                                    "/" + Utils.ConversionMsToSecond(chairStatusBean.getPlayVideoTime()));
                         }
                     });
                     try {

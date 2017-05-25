@@ -6,14 +6,14 @@
 
     <Button
         android:id="@+id/btn_add_staff"
-        android:layout_width="124dp"
+        android:layout_width="164dp"
         android:layout_height="40dp"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="8dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="24dp"
         android:background="@drawable/login_btn_bg"
-        android:text="+新增"
+        android:text="+新增员工"
         android:textColor="#FFFFFF"
         android:textSize="15sp"/>
 
