@@ -1,10 +1,11 @@
 package com.xiaohong.vrcontroller.ui;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -16,13 +17,13 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.xiaohong.vrcontroller.Constants;
-import com.xiaohong.vrcontroller.Interface.DevicesNotifyRefresh;
 import com.xiaohong.vrcontroller.Interface.SubscriberOnNextListener;
 import com.xiaohong.vrcontroller.R;
 import com.xiaohong.vrcontroller.Variable;
 import com.xiaohong.vrcontroller.base.BaseActivity;
+import com.xiaohong.vrcontroller.bean.UpdateDeviceBean;
+import com.xiaohong.vrcontroller.bean.DeviceBean;
 import com.xiaohong.vrcontroller.bean.EditUserBean;
 import com.xiaohong.vrcontroller.bean.FindUsersBean;
 import com.xiaohong.vrcontroller.bean.PadDeviceInfo;
@@ -37,7 +38,8 @@ import com.xiaohong.vrcontroller.utils.net.UdpHelper;
 import com.xiaohong.vrcontroller.utils.widget.PopWindowEditMyPwd;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static java.lang.Thread.sleep;
 
@@ -54,6 +56,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
     private int lastSelectId = -1;
     private SubscriberOnNextListener findUserListener;
     private SubscriberOnNextListener editPwdInfoListener;
+    private SubscriberOnNextListener updateDeviceInfoListener;
     private ImageView imgLogout, imgHelp;
     private Thread sendUdpThread;
     private boolean destroy = false;
@@ -279,6 +282,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
                 Variable.setFindUserBean(findUsersBean);
                 if (!Variable.loginBean.getUser_info().get(0).getEgg_chair_id().startsWith("0")) {
                     sendUdpThread.start();
+                    startUpdate();
                 }
             }
 
@@ -290,6 +294,17 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
             @Override
             public void onNext(EditUserBean editUserBean) {
                 Utils.showToastStr(ActivityHome.this, editUserBean.getContent());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+        };
+        updateDeviceInfoListener = new SubscriberOnNextListener<UpdateDeviceBean>() {
+            @Override
+            public void onNext(UpdateDeviceBean updateDeviceBean) {
+                DebugTools.showDebugLog("updateDevice", updateDeviceBean.getContent());
             }
 
             @Override
@@ -318,5 +333,36 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
         if (Variable.serverSocketThread.getServerSocket() == null && !Variable.serverSocketThread.isAlive()) {
             Variable.serverSocketThread.start();
         }
+    }
+
+    private void startUpdate() {
+
+        final Handler handler = new Handler() {
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                if (msg.what == 1) {
+                    for (DeviceBean deviceBean :
+                            Variable.devices) {
+                        NetworkRequestMethods.getInstance().updateDevice(new ProgressSubscriber<UpdateDeviceBean>(updateDeviceInfoListener, ActivityHome.this, "数据上报中..."), deviceBean.getDeviceSocket().getInetAddress().getHostAddress(),
+                                deviceBean.getVRDeviceInfo().getMac(),
+                                deviceBean.getVRDeviceInfo().getMac(),
+                                deviceBean.getVRDeviceInfo().getEggChairNum());
+                    }
+                }
+            }
+        };
+
+
+        Timer timer = new Timer(true);
+
+        TimerTask task = new TimerTask() {
+            public void run() {
+                Message msg = new Message();
+                msg.what = 1;
+                handler.sendMessage(msg);
+            }
+        };
+
+        timer.schedule(task, 10 * 1000, 10 * 60 * 1000);
     }
 }

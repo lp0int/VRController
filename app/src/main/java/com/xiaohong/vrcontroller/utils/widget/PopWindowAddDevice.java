@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import com.xiaohong.vrcontroller.Interface.SubscriberOnNextListener;
 import com.xiaohong.vrcontroller.R;
-import com.xiaohong.vrcontroller.bean.AddStaffBean;
+import com.xiaohong.vrcontroller.bean.AddDeviceBean;
 import com.xiaohong.vrcontroller.ui.ActivityHome;
 import com.xiaohong.vrcontroller.utils.NetworkRequestMethods;
 import com.xiaohong.vrcontroller.utils.ProgressSubscriber;
@@ -27,28 +27,24 @@ import com.xiaohong.vrcontroller.utils.Utils;
  * Copyright (c) 2017 Shanghai Xiaohong Technology Company. All rights reserved.
  */
 
-public class PopWindowAddStaff extends PopupWindow implements View.OnClickListener {
+public class PopWindowAddDevice extends PopupWindow implements View.OnClickListener {
     private TextView txtTitle;
-    private EditText edtUserName, edtNickName, edtPasswd, edtPhone;
+    private EditText edtDeviceNum, edtVrNum;
     private View conentView;
     private Activity context;
     private SubscriberOnNextListener addStaffListener;
     private Button btnConfirm;
 
-    public PopWindowAddStaff(final Activity context, SubscriberOnNextListener addStaffListener) {
+    public PopWindowAddDevice(final Activity context, SubscriberOnNextListener addStaffListener) {
         this.context = context;
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        conentView = inflater.inflate(R.layout.pop_personal_info, null);
+        conentView = inflater.inflate(R.layout.pop_add_device, null);
         txtTitle = (TextView) conentView.findViewById(R.id.txt_title);
-        txtTitle.setText("新增员工");
-        edtNickName = (EditText) conentView.findViewById(R.id.edt_nickname);
-        edtNickName.setText("");
-        edtUserName = (EditText) conentView.findViewById(R.id.edt_username);
-        edtUserName.setText("");
-        edtPasswd = (EditText) conentView.findViewById(R.id.edt_password);
-        edtPasswd.setText("");
-        edtPhone = (EditText) conentView.findViewById(R.id.edt_phone);
-        edtPhone.setText("");
+        txtTitle.setText("新增设备");
+        edtDeviceNum = (EditText) conentView.findViewById(R.id.edt_device_num);
+        edtDeviceNum.setText("");
+        edtVrNum = (EditText) conentView.findViewById(R.id.edt_device_vr_num);
+        edtVrNum.setText("");
         this.addStaffListener = addStaffListener;
         btnConfirm = (Button) conentView.findViewById(R.id.btn_confirm);
         btnConfirm.setOnClickListener(this);
@@ -95,16 +91,13 @@ public class PopWindowAddStaff extends PopupWindow implements View.OnClickListen
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_confirm:
-                if (TextUtils.isEmpty(edtNickName.getText().toString())
-                        || TextUtils.isEmpty(edtUserName.getText().toString())
-                        || TextUtils.isEmpty(edtPasswd.getText().toString())
-                        || TextUtils.isEmpty(edtPhone.getText().toString())) {
+                if (TextUtils.isEmpty(edtDeviceNum.getText().toString())
+                        || TextUtils.isEmpty(edtVrNum.getText().toString())) {
                     Utils.showToastStr(context, "请填写完整信息");
                     return;
                 }
-                NetworkRequestMethods.getInstance().addStaff(new ProgressSubscriber<AddStaffBean>(addStaffListener, context, "添加员工中..."),
-                        edtUserName.getText().toString(), edtPasswd.getText().toString(),
-                        edtNickName.getText().toString(), edtPhone.getText().toString());
+                NetworkRequestMethods.getInstance().addDevice(new ProgressSubscriber<AddDeviceBean>(addStaffListener, context, "设备员工中..."),
+                        edtDeviceNum.getText().toString(), edtVrNum.getText().toString());
                 dismiss();
                 break;
             default:

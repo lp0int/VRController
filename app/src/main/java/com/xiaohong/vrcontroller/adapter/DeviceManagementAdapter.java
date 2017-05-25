@@ -14,18 +14,23 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.xiaohong.vrcontroller.Constants;
+import com.xiaohong.vrcontroller.Interface.SubscriberOnNextListener;
 import com.xiaohong.vrcontroller.R;
 import com.xiaohong.vrcontroller.Variable;
 import com.xiaohong.vrcontroller.bean.ChairStatusBean;
 import com.xiaohong.vrcontroller.bean.DeviceBean;
 import com.xiaohong.vrcontroller.bean.RequestObject;
+import com.xiaohong.vrcontroller.bean.UpdatePlayActionBean;
 import com.xiaohong.vrcontroller.bean.VideoControl;
 import com.xiaohong.vrcontroller.utils.DebugTools;
+import com.xiaohong.vrcontroller.utils.NetworkRequestMethods;
+import com.xiaohong.vrcontroller.utils.ProgressSubscriber;
 import com.xiaohong.vrcontroller.utils.Utils;
 import com.xiaohong.vrcontroller.utils.net.MsgFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Handler;
 
 import static java.lang.Thread.sleep;
 
@@ -37,9 +42,11 @@ import static java.lang.Thread.sleep;
 
 public class DeviceManagementAdapter extends RecyclerView.Adapter<DeviceManagementAdapter.DeviceViewHolder> {
     private Context mContext;
+    private SubscriberOnNextListener updatePlayActionListener;
 
-    public DeviceManagementAdapter(Context context) {
+    public DeviceManagementAdapter(Context context, SubscriberOnNextListener updatePlayActionListener) {
         mContext = context;
+        this.updatePlayActionListener = updatePlayActionListener;
     }
 
     @Override
@@ -131,45 +138,66 @@ public class DeviceManagementAdapter extends RecyclerView.Adapter<DeviceManageme
                         e.printStackTrace();
                     }
                 }
-                if (chairStatusBean.getPlayVideoType() == Constants.VIDEO_TYPE_PANORAMAVIDEO)
+                if (chairStatusBean.getPlayVideoType() == Constants.VIDEO_TYPE_PANORAMAVIDEO) {
                     chairStatusBean.setPlayVideoType(Constants.VIDEO_TYPE_ORDINARYVIDEO);
-                else
+                } else {
+                    chairStatusBean.setCurrentTime(-1);
                     chairStatusBean.setPlayVideoType(Constants.VIDEO_TYPE_PANORAMAVIDEO);
+                }
                 notifyDataSetChanged();
             }
         });
 
-        Thread videoProgressThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                float videoTimeSecond = chairStatusBean.getPlayVideoTime() / 1000;
-                float i = (float) chairStatusBean.getCurrentTime();
-                if (i == -1) {
-                    holder.videoProgress.setProgress(0);
-                    holder.videoTime.setText("--:--/--:--");
-                    return;
-                }
-                while (i <= videoTimeSecond) {
-                    int videoProgress = (int) (i / videoTimeSecond * 100);
-                    holder.videoProgress.setProgress(videoProgress);
-                    Variable.setVideoCurrentTimeByEggNum(chairStatusBean.getChair().getEgg_chair_num(), (int) i);
-                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            holder.videoTime.setText(Utils.ConversionMsToSecond(chairStatusBean.getCurrentTime() * 1000) +
-                                    "/" + Utils.ConversionMsToSecond(chairStatusBean.getPlayVideoTime()));
+        Thread videoProgressThread = new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        float videoTimeSecond = chairStatusBean.getPlayVideoTime() / 1000;
+                        float i = (float) chairStatusBean.getCurrentTime();
+                        if (i == -1) {
+                            ((Activity) mContext).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    holder.videoProgress.setProgress(0);
+                                    holder.videoTime.setText("--:--/--:--");
+                                }
+                            });
+                            return;
                         }
-                    });
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        while (i <= videoTimeSecond && chairStatusBean.getPlayVideoType() == Constants.VIDEO_TYPE_PANORAMAVIDEO) {
+                            int videoProgress = (int) (i / videoTimeSecond * 100);
+                            holder.videoProgress.setProgress(videoProgress);
+                            Variable.setVideoCurrentTimeByEggNum(chairStatusBean.getChair().getEgg_chair_num(), (int) i);
+                            ((Activity) mContext).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    holder.videoTime.setText(Utils.ConversionMsToSecond(chairStatusBean.getCurrentTime() * 1000) +
+                                            "/" + Utils.ConversionMsToSecond(chairStatusBean.getPlayVideoTime()));
+                                }
+                            });
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            if (videoTimeSecond - i == 5) {
+                                for (final DeviceBean device :
+                                        arrays) {
+                                    ((Activity)mContext).runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            NetworkRequestMethods.getInstance().updatePlayAction(new ProgressSubscriber<UpdatePlayActionBean>(updatePlayActionListener, mContext, "上报视频播放完成..."),
+                                                    device.getVRDeviceInfo().getMac(),
+                                                    device.getVRDeviceInfo().getEggChairNum());
+                                        }
+                                    });
+                                }
+                            }
+                            i++;
+                        }
+                        Variable.setVideoCurrentTimeByEggNum(chairStatusBean.getChair().getEgg_chair_num(), -1);
                     }
-                    i++;
-                }
-                Variable.setVideoCurrentTimeByEggNum(chairStatusBean.getChair().getEgg_chair_num(), -1);
-            }
-        });
+                });
         videoProgressThread.start();
     }
 

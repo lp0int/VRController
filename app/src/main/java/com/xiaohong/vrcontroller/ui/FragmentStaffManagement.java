@@ -9,10 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.TextView;
 
 import com.xiaohong.vrcontroller.Constants;
 import com.xiaohong.vrcontroller.Interface.SubscriberOnNextListener;
@@ -20,15 +18,16 @@ import com.xiaohong.vrcontroller.R;
 import com.xiaohong.vrcontroller.Variable;
 import com.xiaohong.vrcontroller.adapter.StaffManagementAdapter;
 import com.xiaohong.vrcontroller.base.BaseFragment;
+import com.xiaohong.vrcontroller.bean.AddDeviceBean;
 import com.xiaohong.vrcontroller.bean.AddStaffBean;
 import com.xiaohong.vrcontroller.bean.DeleteUserBean;
 import com.xiaohong.vrcontroller.bean.EditChairBean;
 import com.xiaohong.vrcontroller.bean.EditUserBean;
 import com.xiaohong.vrcontroller.bean.FindUsersBean;
-import com.xiaohong.vrcontroller.utils.DebugTools;
 import com.xiaohong.vrcontroller.utils.NetworkRequestMethods;
 import com.xiaohong.vrcontroller.utils.ProgressSubscriber;
 import com.xiaohong.vrcontroller.utils.Utils;
+import com.xiaohong.vrcontroller.utils.widget.PopWindowAddDevice;
 import com.xiaohong.vrcontroller.utils.widget.PopWindowAddStaff;
 
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ import java.util.ArrayList;
  * Copyright (c) 2017 Shanghai Xiaohong Technology company. All rights reserved.
  */
 
-public class FragmentStaffManagement extends BaseFragment implements OnClickListener,SwipeRefreshLayout.OnRefreshListener{
+public class FragmentStaffManagement extends BaseFragment implements OnClickListener, SwipeRefreshLayout.OnRefreshListener {
     private ArrayList<String> mList, mHeaderList;
     private ArrayList<Boolean> booleans, booleansHeader;
     private StaffManagementAdapter mStaffManagementAdapter, mStaffManagementHeaderAdapter;
@@ -101,6 +100,7 @@ public class FragmentStaffManagement extends BaseFragment implements OnClickList
             @Override
             public void onNext(FindUsersBean findUsersBean) {
                 Variable.mfindUsersBean = findUsersBean;
+                Variable.chairs = findUsersBean.getChair();
                 mList.clear();
                 booleans.clear();
                 mSwipeRefreshLayout.setRefreshing(false);
@@ -157,8 +157,19 @@ public class FragmentStaffManagement extends BaseFragment implements OnClickList
         addStaffListener = new SubscriberOnNextListener<AddStaffBean>() {
             @Override
             public void onNext(AddStaffBean addStaffBean) {
-                Utils.showToastStr(getContext(),addStaffBean.getContent());
+                Utils.showToastStr(getContext(), addStaffBean.getContent());
                 onRefresh();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+        };
+        addDeviceListener = new SubscriberOnNextListener<AddDeviceBean>() {
+            @Override
+            public void onNext(AddDeviceBean addDeviceBean) {
+                Utils.showToastStr(getContext(), addDeviceBean.getContent());
             }
 
             @Override
@@ -205,10 +216,12 @@ public class FragmentStaffManagement extends BaseFragment implements OnClickList
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_add_staff:
-                PopWindowAddStaff popWindowAddStaff = new PopWindowAddStaff((Activity) getContext(),addStaffListener);
+                PopWindowAddStaff popWindowAddStaff = new PopWindowAddStaff((Activity) getContext(), addStaffListener);
                 popWindowAddStaff.showPopupWindow(v);
                 break;
             case R.id.btn_add_device:
+                PopWindowAddDevice popWindowAddDevice = new PopWindowAddDevice((Activity) getContext(), addDeviceListener);
+                popWindowAddDevice.showPopupWindow(v);
                 break;
         }
     }

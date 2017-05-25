@@ -2,12 +2,16 @@ package com.xiaohong.vrcontroller.utils;
 
 import com.xiaohong.vrcontroller.Constants;
 import com.xiaohong.vrcontroller.Interface.RequestServiceInterface;
+import com.xiaohong.vrcontroller.Variable;
+import com.xiaohong.vrcontroller.bean.UpdateDeviceBean;
+import com.xiaohong.vrcontroller.bean.AddDeviceBean;
 import com.xiaohong.vrcontroller.bean.AddStaffBean;
 import com.xiaohong.vrcontroller.bean.DeleteUserBean;
 import com.xiaohong.vrcontroller.bean.EditChairBean;
 import com.xiaohong.vrcontroller.bean.EditUserBean;
 import com.xiaohong.vrcontroller.bean.FindUsersBean;
 import com.xiaohong.vrcontroller.bean.LoginBean;
+import com.xiaohong.vrcontroller.bean.UpdatePlayActionBean;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -68,7 +72,7 @@ public class NetworkRequestMethods {
     }
 
     public void findUser(Subscriber<FindUsersBean> subscriber) {
-        mRequestServiceInterface.findUser()
+        mRequestServiceInterface.findUser(Variable.userName)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -76,7 +80,7 @@ public class NetworkRequestMethods {
     }
 
     public void editEggChair(Subscriber<EditChairBean> subscriber, String userName, String chair) {
-        mRequestServiceInterface.editChairBean(userName, chair)
+        mRequestServiceInterface.editChairBean(userName, chair, Variable.userName)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -84,7 +88,7 @@ public class NetworkRequestMethods {
     }
 
     public void deleteUser(Subscriber<DeleteUserBean> subscriber, String userName) {
-        mRequestServiceInterface.deleteUser(userName)
+        mRequestServiceInterface.deleteUser(userName, Variable.userName)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -92,15 +96,39 @@ public class NetworkRequestMethods {
     }
 
     public void editUserPassword(Subscriber<EditUserBean> subscriber, String userName, String passwd) {
-        mRequestServiceInterface.editUser(userName, passwd)
+        mRequestServiceInterface.editUser(userName, passwd, Variable.userName)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(subscriber);
     }
 
-    public void addStaff(Subscriber<AddStaffBean> subscriber,String userName,String password,String nickName,String phone){
-        mRequestServiceInterface.addStaff(userName,password,nickName,"",phone)
+    public void addStaff(Subscriber<AddStaffBean> subscriber, String userName, String password, String nickName, String phone) {
+        mRequestServiceInterface.addStaff(userName, password, nickName, "", phone, Variable.userName)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(subscriber);
+    }
+
+    public void addDevice(Subscriber<AddDeviceBean> subscriber, String chairNum, String vrNum) {
+        mRequestServiceInterface.addDevice(chairNum, vrNum, Variable.userName)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(subscriber);
+    }
+
+    public void updateDevice(Subscriber<UpdateDeviceBean> subscriber, String vrIp, String vrMac, String vrNum, String vrChairNum) {
+        mRequestServiceInterface.updateDevice(vrIp, vrMac, vrNum, vrChairNum, Variable.userName)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(subscriber);
+    }
+
+    public void updatePlayAction(Subscriber<UpdatePlayActionBean> subscriber, String vrNum, String chairId) {
+        mRequestServiceInterface.updatePlayAction(vrNum, chairId, Variable.userName)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,10 +30,11 @@ import com.xiaohong.vrcontroller.utils.Utils;
  * Copyright (c) 2017 Shanghai Xiaohong Technology company. All rights reserved.
  */
 
-public class FragmentWebView extends BaseFragment {
+public class FragmentWebView extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener {
     private WebView webView;
     private String mUrl = "";
     private ProgressBar webViewProgressBar;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     public static FragmentWebView newInstance(String url) {
         FragmentWebView instance = new FragmentWebView();
@@ -66,6 +68,8 @@ public class FragmentWebView extends BaseFragment {
         webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         webView.setVerticalScrollBarEnabled(false);
         webViewProgressBar = (ProgressBar) view.findViewById(R.id.webview_progress);
+        mSwipeRefreshLayout = (SwipeRefreshLayout)view.findViewById(R.id.swipe_refresh_widget);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setBuiltInZoomControls(false);
@@ -105,6 +109,12 @@ public class FragmentWebView extends BaseFragment {
             }
         });
         webView.loadUrl(mUrl);
+    }
+
+    @Override
+    public void onRefresh() {
+        webView.reload();
+        mSwipeRefreshLayout.setRefreshing(false);
     }
 
     private class MyWebChromeClient extends WebChromeClient {

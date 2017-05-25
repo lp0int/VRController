@@ -38,7 +38,7 @@ public class PopWindowEditMyPwd extends PopupWindow implements View.OnClickListe
     public PopWindowEditMyPwd(final Activity context,SubscriberOnNextListener editPwdListener) {
         this.context = context;
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        conentView = inflater.inflate(R.layout.pop_edit_personal_info, null);
+        conentView = inflater.inflate(R.layout.pop_personal_info, null);
         txtTitle = (TextView) conentView.findViewById(R.id.txt_title);
         txtTitle.setText("修改密码");
         edtNickName = (EditText) conentView.findViewById(R.id.edt_nickname);

@@ -12,10 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.xiaohong.vrcontroller.Interface.DevicesNotifyRefresh;
+import com.xiaohong.vrcontroller.Interface.SubscriberOnNextListener;
 import com.xiaohong.vrcontroller.R;
 import com.xiaohong.vrcontroller.adapter.DeviceManagementAdapter;
 import com.xiaohong.vrcontroller.base.BaseFragment;
+import com.xiaohong.vrcontroller.bean.UpdatePlayActionBean;
 import com.xiaohong.vrcontroller.utils.DebugTools;
+import com.xiaohong.vrcontroller.utils.Utils;
 
 /**
  * Created by Lpoint on 2017/5/17.
@@ -28,6 +31,7 @@ public class FragmentDeviceManagement extends BaseFragment implements SwipeRefre
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
     private DeviceManagementAdapter mDeviceManagementAdapter;
+    private SubscriberOnNextListener updatePlayActionListener;
 
     public static FragmentDeviceManagement newInstance() {
         FragmentDeviceManagement instance = new FragmentDeviceManagement();
@@ -52,8 +56,6 @@ public class FragmentDeviceManagement extends BaseFragment implements SwipeRefre
                 ((Activity) getContext()).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mDeviceManagementAdapter = new DeviceManagementAdapter(getActivity());
-                        mRecyclerView.setAdapter(mDeviceManagementAdapter);
                         mDeviceManagementAdapter.notifyDataSetChanged();
                     }
                 });
@@ -75,18 +77,28 @@ public class FragmentDeviceManagement extends BaseFragment implements SwipeRefre
 
     private void initData() {
         initRequestListener();
-        mDeviceManagementAdapter = new DeviceManagementAdapter(getActivity());
+        mDeviceManagementAdapter = new DeviceManagementAdapter(getActivity(),updatePlayActionListener);
         mRecyclerView.setAdapter(mDeviceManagementAdapter);
         onRefresh();
     }
 
     @Override
     public void onRefresh() {
-        mDeviceManagementAdapter = new DeviceManagementAdapter(getActivity());
-        mRecyclerView.setAdapter(mDeviceManagementAdapter);
+        mDeviceManagementAdapter.notifyDataSetChanged();
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
     private void initRequestListener() {
+        updatePlayActionListener = new SubscriberOnNextListener<UpdatePlayActionBean>() {
+            @Override
+            public void onNext(UpdatePlayActionBean o) {
+                Utils.showToastStr(getContext(),o.getContent());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+        };
     }
 }
