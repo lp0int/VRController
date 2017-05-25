@@ -2,6 +2,7 @@ package com.xiaohong.vrcontroller.utils;
 
 import com.xiaohong.vrcontroller.Constants;
 import com.xiaohong.vrcontroller.Interface.RequestServiceInterface;
+import com.xiaohong.vrcontroller.bean.AddStaffBean;
 import com.xiaohong.vrcontroller.bean.DeleteUserBean;
 import com.xiaohong.vrcontroller.bean.EditChairBean;
 import com.xiaohong.vrcontroller.bean.EditUserBean;
@@ -92,6 +93,14 @@ public class NetworkRequestMethods {
 
     public void editUserPassword(Subscriber<EditUserBean> subscriber, String userName, String passwd) {
         mRequestServiceInterface.editUser(userName, passwd)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(subscriber);
+    }
+
+    public void addStaff(Subscriber<AddStaffBean> subscriber,String userName,String password,String nickName,String phone){
+        mRequestServiceInterface.addStaff(userName,password,nickName,"",phone)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

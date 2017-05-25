@@ -1,5 +1,6 @@
 package com.xiaohong.vrcontroller.Interface;
 
+import com.xiaohong.vrcontroller.bean.AddStaffBean;
 import com.xiaohong.vrcontroller.bean.DeleteUserBean;
 import com.xiaohong.vrcontroller.bean.EditChairBean;
 import com.xiaohong.vrcontroller.bean.EditUserBean;
@@ -31,5 +32,10 @@ public interface RequestServiceInterface {
     Observable<DeleteUserBean> deleteUser(@Query("user") String user);
 
     @GET("index.php/index/login/modifyPass")
-    Observable<EditUserBean> editUser(@Query("user") String user,@Query("password") String password);
+    Observable<EditUserBean> editUser(@Query("user") String user, @Query("password") String password);
+
+    @GET("index.php/index/login/register")
+    Observable<AddStaffBean> addStaff(@Query("user") String user, @Query("password") String password,
+                                      @Query("nick_name") String nickName, @Query("egg_chair_id") String eggChairId,
+                                      @Query("phone") String phone);
 }

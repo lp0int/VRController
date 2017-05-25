@@ -61,9 +61,9 @@
             android:layout_height="50dp"
             android:layout_marginLeft="8dp"
             android:layout_toRightOf="@+id/txt_nickname"
-            android:editable="false"
             android:gravity="center"
             android:text="孙宇宙"
+            android:inputType="textPersonName"
             android:textSize="17sp"/>
 
         <TextView
@@ -83,9 +83,9 @@
             android:layout_below="@+id/edt_nickname"
             android:layout_marginLeft="8dp"
             android:layout_toRightOf="@+id/txt_nickname"
-            android:editable="false"
             android:gravity="center"
             android:text="123456"
+            android:inputType="textPersonName"
             android:textSize="17sp"/>
 
         <TextView
@@ -129,7 +129,7 @@
             android:layout_marginLeft="8dp"
             android:layout_toRightOf="@+id/txt_nickname"
             android:gravity="center"
-            android:editable="false"
+            android:inputType="phone"
             android:text="15012345678"/>
 
     </RelativeLayout>

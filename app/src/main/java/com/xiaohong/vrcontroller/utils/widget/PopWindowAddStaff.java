@@ -3,6 +3,7 @@ package com.xiaohong.vrcontroller.utils.widget;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,11 +16,14 @@ import android.widget.TextView;
 import com.xiaohong.vrcontroller.Interface.SubscriberOnNextListener;
 import com.xiaohong.vrcontroller.R;
 import com.xiaohong.vrcontroller.Variable;
+import com.xiaohong.vrcontroller.bean.AddStaffBean;
 import com.xiaohong.vrcontroller.bean.EditUserBean;
 import com.xiaohong.vrcontroller.ui.ActivityHome;
 import com.xiaohong.vrcontroller.utils.NetworkRequestMethods;
 import com.xiaohong.vrcontroller.utils.ProgressSubscriber;
 import com.xiaohong.vrcontroller.utils.Utils;
+
+import org.w3c.dom.Text;
 
 /**
  * Created by Lpoint on 2017/5/25.
@@ -27,42 +31,29 @@ import com.xiaohong.vrcontroller.utils.Utils;
  * Copyright (c) 2017 Shanghai Xiaohong Technology Company. All rights reserved.
  */
 
-public class PopWindowEditMyPwd extends PopupWindow implements View.OnClickListener{
+public class PopWindowAddStaff extends PopupWindow implements View.OnClickListener {
     private TextView txtTitle;
     private EditText edtUserName, edtNickName, edtPasswd, edtPhone;
     private View conentView;
     private Activity context;
-    private SubscriberOnNextListener editPwdListener;
+    private SubscriberOnNextListener addStaffListener;
     private Button btnConfirm;
 
-    public PopWindowEditMyPwd(final Activity context,SubscriberOnNextListener editPwdListener) {
+    public PopWindowAddStaff(final Activity context, SubscriberOnNextListener addStaffListener) {
         this.context = context;
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         conentView = inflater.inflate(R.layout.pop_edit_personal_info, null);
         txtTitle = (TextView) conentView.findViewById(R.id.txt_title);
-        txtTitle.setText("修改密码");
+        txtTitle.setText("新增员工");
         edtNickName = (EditText) conentView.findViewById(R.id.edt_nickname);
-        edtNickName.setText(Variable.loginBean.getUser_info().get(0).getNickName());
-        edtNickName.setCursorVisible(false);
-        edtNickName.setFocusable(false);
-        edtNickName.setFocusableInTouchMode(false);
-
+        edtNickName.setText("");
         edtUserName = (EditText) conentView.findViewById(R.id.edt_username);
-        edtUserName.setText(Variable.userName);
-        edtUserName.setCursorVisible(false);
-        edtUserName.setFocusable(false);
-        edtUserName.setFocusableInTouchMode(false);
-
+        edtUserName.setText("");
         edtPasswd = (EditText) conentView.findViewById(R.id.edt_password);
         edtPasswd.setText("");
         edtPhone = (EditText) conentView.findViewById(R.id.edt_phone);
-        edtPhone.setText(Variable.loginBean.getUser_info().get(0).getPhone());
-        edtPhone.setCursorVisible(false);
-        edtPhone.setFocusable(false);
-        edtPhone.setFocusableInTouchMode(false);
-
-        edtPasswd.requestFocus();
-        this.editPwdListener = editPwdListener;
+        edtPhone.setText("");
+        this.addStaffListener = addStaffListener;
         btnConfirm = (Button) conentView.findViewById(R.id.btn_confirm);
         btnConfirm.setOnClickListener(this);
         int h = context.getWindowManager().getDefaultDisplay().getHeight();
@@ -106,10 +97,18 @@ public class PopWindowEditMyPwd extends PopupWindow implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.btn_confirm:
-                NetworkRequestMethods.getInstance().editUserPassword(new ProgressSubscriber<EditUserBean>(editPwdListener, context, "密码设置中..."),
-                    Variable.userName, edtPasswd.getText().toString());
+                if (TextUtils.isEmpty(edtNickName.getText().toString())
+                        || TextUtils.isEmpty(edtUserName.getText().toString())
+                        || TextUtils.isEmpty(edtPasswd.getText().toString())
+                        || TextUtils.isEmpty(edtPhone.getText().toString())) {
+                    Utils.showToastStr(context, "请填写完整信息");
+                    return;
+                }
+                NetworkRequestMethods.getInstance().addStaff(new ProgressSubscriber<AddStaffBean>(addStaffListener, context, "添加员工中..."),
+                        edtUserName.getText().toString(), edtPasswd.getText().toString(),
+                        edtNickName.getText().toString(), edtPhone.getText().toString());
                 dismiss();
                 break;
             default:
