@@ -79,8 +79,8 @@ public class MsgFactory {
                 Variable.setVideoTimeByDeviceIp(ip,mResponcePlayCommand.getVideoTime());
                 break;
             case 0x04:
-                String time = msg.split("\\|")[0];
-                String power = msg.split("\\|")[1];
+                String time = mRequestObjectJson.split("\\|")[0];
+                String power = mRequestObjectJson.split("\\|")[1];
                 DeviceBean deviceBean = Variable.getDevicesByIp(ip);
                 deviceBean.getVRDeviceInfo().setRemainingPower(Integer.parseInt(power));
                 Variable.setDeviceInfoByIp(ip,deviceBean.getVRDeviceInfo());

@@ -65,9 +65,12 @@ public class DeviceManagementAdapter extends RecyclerView.Adapter<DeviceManageme
         if (arrays == null) {
             return;
         }
+        if(arrays.size() == 0)
+            hideView(-1,holder);
         int index = 0;
         for (DeviceBean device :
                 arrays) {
+            hideView(index,holder);
             switch (index) {
                 case 0:
                     holder.txtDeviceId1.setVisibility(View.VISIBLE);
@@ -183,7 +186,7 @@ public class DeviceManagementAdapter extends RecyclerView.Adapter<DeviceManageme
                             if (videoTimeSecond - i == 5) {
                                 for (final DeviceBean device :
                                         arrays) {
-                                    ((Activity)mContext).runOnUiThread(new Runnable() {
+                                    ((Activity) mContext).runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             NetworkRequestMethods.getInstance().updatePlayAction(new ProgressSubscriber<UpdatePlayActionBean>(updatePlayActionListener, mContext, "上报视频播放完成..."),
@@ -277,5 +280,28 @@ public class DeviceManagementAdapter extends RecyclerView.Adapter<DeviceManageme
                 break;
         }
         return d;
+    }
+
+    void hideView(int startIndex, DeviceViewHolder holder) {
+        switch (startIndex) {
+            case -1:
+                holder.txtDeviceId1.setVisibility(View.INVISIBLE);
+                holder.imgStatus1.setVisibility(View.INVISIBLE);
+                holder.txtPower1.setVisibility(View.INVISIBLE);
+            case 0:
+                holder.txtDeviceId2.setVisibility(View.INVISIBLE);
+                holder.imgStatus2.setVisibility(View.INVISIBLE);
+                holder.txtPower2.setVisibility(View.INVISIBLE);
+            case 1:
+                holder.txtDeviceId3.setVisibility(View.INVISIBLE);
+                holder.imgStatus3.setVisibility(View.INVISIBLE);
+                holder.txtPower3.setVisibility(View.INVISIBLE);
+            case 2:
+                holder.txtDeviceId4.setVisibility(View.INVISIBLE);
+                holder.imgStatus4.setVisibility(View.INVISIBLE);
+                holder.txtPower4.setVisibility(View.INVISIBLE);
+            default:
+                break;
+        }
     }
 }

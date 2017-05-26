@@ -84,7 +84,9 @@ public class FragmentDeviceManagement extends BaseFragment implements SwipeRefre
 
     @Override
     public void onRefresh() {
-        mDeviceManagementAdapter.notifyDataSetChanged();
+        mDeviceManagementAdapter = new DeviceManagementAdapter(getActivity(),updatePlayActionListener);
+        mRecyclerView.setAdapter(mDeviceManagementAdapter);
+//        mDeviceManagementAdapter.notifyDataSetChanged();
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
