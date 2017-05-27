@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.xiaohong.vrcontroller.Constants;
 import com.xiaohong.vrcontroller.Interface.DevicesNotifyRefresh;
 import com.xiaohong.vrcontroller.Variable;
+import com.xiaohong.vrcontroller.bean.CacheTcpMsgBean;
 import com.xiaohong.vrcontroller.bean.DeviceBean;
 import com.xiaohong.vrcontroller.bean.PadDeviceInfo;
 import com.xiaohong.vrcontroller.bean.RequestObject;
@@ -27,10 +28,9 @@ public class MsgFactory {
     private Context mContext;
     private static MsgFactory mInstance;
     public static Gson mGson;
-    boolean inSendingUdp = false;
-    private byte[] cacheMsgByte = null;
-    private ArrayList<String> ipList = new ArrayList<String>();
-    private Thread videoPlayThread;
+    //    private byte[] cacheMsgByte = null;
+//    private ArrayList<String> ipList = new ArrayList<String>();
+    private ArrayList<CacheTcpMsgBean> cacheTcpMsgList = new ArrayList<CacheTcpMsgBean>();
 
     public MsgFactory(Context context) {
         mContext = context;
@@ -55,7 +55,7 @@ public class MsgFactory {
             String power = msg.split("\\|")[1];
             DeviceBean deviceBean = Variable.getDevicesByIp(ip);
             deviceBean.getVRDeviceInfo().setRemainingPower(Integer.parseInt(power));
-            Variable.setDeviceInfoByIp(ip,deviceBean.getVRDeviceInfo());
+            Variable.setDeviceInfoByIp(ip, deviceBean.getVRDeviceInfo());
             return;
         }
         switch (mRequestObject.getRequestObjectType()) {
@@ -70,20 +70,20 @@ public class MsgFactory {
             case 0x03:
                 ResponcePlayCommand mResponcePlayCommand = mGson.fromJson(mRequestObjectJson, ResponcePlayCommand.class);
                 if (mResponcePlayCommand.getVideoType() == 0x00) {
-                    Variable.setVideoCurrentTimeByEggNum(Variable.getDevicesByIp(ip).getVRDeviceInfo().getEggChairNum(),0);
+                    Variable.setVideoCurrentTimeByEggNum(Variable.getDevicesByIp(ip).getVRDeviceInfo().getEggChairNum(), 0);
                     Variable.setDevicePlayVideoStatusByIp(ip, Constants.DEVICES_PLAYVIDEO_STATUS_OK);
                 } else {
-                    Variable.setVideoCurrentTimeByEggNum(Variable.getDevicesByIp(ip).getVRDeviceInfo().getEggChairNum(),-1);
+                    Variable.setVideoCurrentTimeByEggNum(Variable.getDevicesByIp(ip).getVRDeviceInfo().getEggChairNum(), -1);
                     Variable.setDevicePlayVideoStatusByIp(ip, Constants.DEVICES_PLAYVIDEO_STATUS_STANDBY);
                 }
-                Variable.setVideoTimeByDeviceIp(ip,mResponcePlayCommand.getVideoTime());
+                Variable.setVideoTimeByDeviceIp(ip, mResponcePlayCommand.getVideoTime());
                 break;
             case 0x04:
                 String time = mRequestObjectJson.split("\\|")[0];
                 String power = mRequestObjectJson.split("\\|")[1];
                 DeviceBean deviceBean = Variable.getDevicesByIp(ip);
                 deviceBean.getVRDeviceInfo().setRemainingPower(Integer.parseInt(power));
-                Variable.setDeviceInfoByIp(ip,deviceBean.getVRDeviceInfo());
+                Variable.setDeviceInfoByIp(ip, deviceBean.getVRDeviceInfo());
                 break;
             default:
                 break;
@@ -91,36 +91,70 @@ public class MsgFactory {
     }
 
     public void handleTcpMsg(String ip, byte[] msg) {
-        ipList.add(ip);
-        if (cacheMsgByte == null || cacheMsgByte.length == 0) {
-            cacheMsgByte = msg;
+        if (findTcpMsg(ip) == null) {
+            CacheTcpMsgBean cacheTcpMsgBean = new CacheTcpMsgBean();
+            cacheTcpMsgBean.setIp(ip);
+            cacheTcpMsgBean.setCacheMsg(msg);
+            cacheTcpMsgList.add(cacheTcpMsgBean);
         } else {
-            byte[] data = new byte[cacheMsgByte.length + msg.length];
-            System.arraycopy(cacheMsgByte, 0, data, 0, cacheMsgByte.length);
-            System.arraycopy(msg, 0, data, cacheMsgByte.length, msg.length);
-            cacheMsgByte = data;
+            byte[] data = new byte[findTcpMsg(ip).getCacheMsg().length + msg.length];
+            System.arraycopy(findTcpMsg(ip).getCacheMsg(), 0, data, 0, findTcpMsg(ip).getCacheMsg().length);
+            System.arraycopy(msg, 0, data, findTcpMsg(ip).getCacheMsg().length, msg.length);
+            findTcpMsg(ip).setCacheMsg(data);
         }
         while (true) {
-            if (cacheMsgByte == null || cacheMsgByte.length <= 4) {
+            if (findTcpMsg(ip).getCacheMsg() == null || findTcpMsg(ip).getCacheMsg().length <= 4) {
                 return;
             }
             byte[] data_length = new byte[4];
-            DebugTools.showDebugLog("cacheTcpMsg", cacheMsgByte.length + "|" + new String(cacheMsgByte, 0, cacheMsgByte.length));
-            System.arraycopy(cacheMsgByte, 0, data_length, 0, 4);
+            DebugTools.showDebugLog("cacheTcpMsg", findTcpMsg(ip).getCacheMsg().length + "|" + new String(findTcpMsg(ip).getCacheMsg(),
+                    0,
+                    findTcpMsg(ip).getCacheMsg().length));
+            System.arraycopy(findTcpMsg(ip).getCacheMsg(), 0, data_length, 0, 4);
             int dataLength = Utils.byte2int(data_length);
-            if (cacheMsgByte.length < dataLength + 4)
+            if (findTcpMsg(ip).getCacheMsg().length < dataLength + 4)
                 return;
-            String data_content = new String(cacheMsgByte, 4, Utils.byte2int(data_length));
+            String data_content = new String(findTcpMsg(ip).getCacheMsg(), 4, Utils.byte2int(data_length));
             handleMsg(ip, data_content);
-            ipList.remove(0);
-            if (data_content.length() + 4 == cacheMsgByte.length) {
-                cacheMsgByte = new byte[0];
+            if (data_content.length() + 4 == findTcpMsg(ip).getCacheMsg().length) {
+                findTcpMsg(ip).setCacheMsg(new byte[0]);
                 return;
             }
-            byte[] remainingData = new byte[cacheMsgByte.length - data_content.length() - 4];
-            System.arraycopy(cacheMsgByte, data_content.length() + 4, remainingData, 0, remainingData.length);
-            cacheMsgByte = remainingData;
+            byte[] remainingData = new byte[findTcpMsg(ip).getCacheMsg().length - data_content.length() - 4];
+            System.arraycopy(findTcpMsg(ip).getCacheMsg(), data_content.length() + 4, remainingData, 0, remainingData.length);
+            findTcpMsg(ip).setCacheMsg(remainingData);
         }
     }
 
+    private CacheTcpMsgBean findTcpMsg(String ip) {
+        for (CacheTcpMsgBean cacheTcpMsgBean :
+                cacheTcpMsgList) {
+            if (cacheTcpMsgBean.getIp().equals(ip))
+                return cacheTcpMsgBean;
+        }
+        return null;
+    }
+
+    private boolean addTcpMsg(CacheTcpMsgBean mCacheTcpMsgBean) {
+        for (CacheTcpMsgBean cacheTcpMsgBean :
+                cacheTcpMsgList) {
+            if (cacheTcpMsgBean.getIp().equals(mCacheTcpMsgBean.getIp()))
+                return false;
+        }
+        cacheTcpMsgList.add(mCacheTcpMsgBean);
+        return true;
+    }
+
+    private boolean setCacheBean(CacheTcpMsgBean mCacheTcpMsgBean) {
+        int index = 0;
+        for (CacheTcpMsgBean cacheTcpMsgBean :
+                cacheTcpMsgList) {
+            if (cacheTcpMsgBean.getIp().equals(mCacheTcpMsgBean.getIp())) {
+                cacheTcpMsgList.set(index, mCacheTcpMsgBean);
+                return false;
+            }
+            index++;
+        }
+        return false;
+    }
 }

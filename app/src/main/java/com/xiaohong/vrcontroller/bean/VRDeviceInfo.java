@@ -11,14 +11,14 @@ package com.xiaohong.vrcontroller.bean;
  */
 public class VRDeviceInfo {
     private Integer remainingPower;
-    private String eggChairId;
+    private String eggChairNum;
     private String mac;
     private Integer deviceStatus;       //0x00:playing   0x01:stand by
     private Integer usbStatus;          //0x00:connection       0x01:not connected
 
     public VRDeviceInfo() {
         remainingPower = -1;
-        eggChairId = "-1";
+        eggChairNum = "-1";
         mac = "-1";
         deviceStatus = 0x01;
         usbStatus = 0x01;
@@ -33,11 +33,11 @@ public class VRDeviceInfo {
     }
 
     public String getEggChairNum() {
-        return eggChairId;
+        return eggChairNum;
     }
 
     public void setEggChairNum(String eggChairNum) {
-        this.eggChairId = eggChairNum;
+        this.eggChairNum = eggChairNum;
     }
 
     public String getMac() {
