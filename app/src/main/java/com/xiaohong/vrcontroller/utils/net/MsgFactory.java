@@ -1,19 +1,22 @@
 package com.xiaohong.vrcontroller.utils.net;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.Looper;
 
 import com.google.gson.Gson;
 import com.xiaohong.vrcontroller.Constants;
-import com.xiaohong.vrcontroller.Interface.DevicesNotifyRefresh;
+import com.xiaohong.vrcontroller.Interface.SubscriberOnNextListener;
 import com.xiaohong.vrcontroller.Variable;
 import com.xiaohong.vrcontroller.bean.CacheTcpMsgBean;
 import com.xiaohong.vrcontroller.bean.DeviceBean;
-import com.xiaohong.vrcontroller.bean.PadDeviceInfo;
 import com.xiaohong.vrcontroller.bean.RequestObject;
 import com.xiaohong.vrcontroller.bean.ResponcePlayCommand;
+import com.xiaohong.vrcontroller.bean.UpdateDeviceBean;
 import com.xiaohong.vrcontroller.bean.VRDeviceInfo;
-import com.xiaohong.vrcontroller.ui.FragmentDeviceManagement;
 import com.xiaohong.vrcontroller.utils.DebugTools;
+import com.xiaohong.vrcontroller.utils.NetworkRequestMethods;
+import com.xiaohong.vrcontroller.utils.ProgressSubscriber;
 import com.xiaohong.vrcontroller.utils.Utils;
 
 import java.util.ArrayList;
@@ -28,13 +31,23 @@ public class MsgFactory {
     private Context mContext;
     private static MsgFactory mInstance;
     public static Gson mGson;
-    //    private byte[] cacheMsgByte = null;
-//    private ArrayList<String> ipList = new ArrayList<String>();
+    private SubscriberOnNextListener updateDeviceInfoListener;
     private ArrayList<CacheTcpMsgBean> cacheTcpMsgList = new ArrayList<CacheTcpMsgBean>();
 
     public MsgFactory(Context context) {
         mContext = context;
         mGson = new Gson();
+        updateDeviceInfoListener = new SubscriberOnNextListener<UpdateDeviceBean>() {
+            @Override
+            public void onNext(UpdateDeviceBean updateDeviceBean) {
+                DebugTools.showDebugLog("updateDevice", updateDeviceBean.getContent());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+        };
     }
 
     public static MsgFactory getInstance(Context mContext) {
@@ -44,7 +57,7 @@ public class MsgFactory {
     }
 
 
-    public void handleMsg(String ip, String msg) {
+    public void handleMsg(final String ip, String msg) {
         RequestObject mRequestObject;
         String mRequestObjectJson;
         try {
@@ -62,6 +75,16 @@ public class MsgFactory {
             case 0x00:
                 final VRDeviceInfo mVrDeviceInfo = mGson.fromJson(mRequestObjectJson, VRDeviceInfo.class);
                 Variable.setDeviceInfoByIp(ip, mVrDeviceInfo);
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        NetworkRequestMethods.getInstance().updateDevice(new ProgressSubscriber<UpdateDeviceBean>(updateDeviceInfoListener, mContext, "数据上报中..."),
+                                ip,
+                                mVrDeviceInfo.getMac(),
+                                mVrDeviceInfo.getMac(),
+                                mVrDeviceInfo.getEggChairNum());
+                    }
+                });
                 break;
             case 0x01:
                 break;

@@ -5,6 +5,9 @@ package com.xiaohong.vrcontroller;
  */
 
 public class Constants {
+    public static final int MODE_OFF_LINE = 0x02;
+    public static final int MODE_ONLINE = 0x01;
+
     public static final String BASE_URL = "http://vr.jinkechen.com/";
     public static final int DEFAULT_TIMEOUT  = 20;
     public static final String nullEggChairId = "100000000";
@@ -22,6 +25,8 @@ public class Constants {
     public static final String NICK_NAME = "nickName";;
     public static final String EGG_CHAIR_ID = "eggChairId";;
     public static final String PHONE = "phone";
+    public static final String DEVICE_INFO = "deviceInfo";
+    public static final String CHAIR_LIST = "chairList";
     /**
      * WebViewFragment相关数据
      */

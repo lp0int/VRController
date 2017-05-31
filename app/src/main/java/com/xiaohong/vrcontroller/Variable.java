@@ -9,7 +9,6 @@ import com.xiaohong.vrcontroller.bean.FindUsersBean;
 import com.xiaohong.vrcontroller.bean.LoginBean;
 import com.xiaohong.vrcontroller.bean.VRDeviceInfo;
 import com.xiaohong.vrcontroller.ui.FragmentDeviceManagement;
-import com.xiaohong.vrcontroller.utils.Utils;
 import com.xiaohong.vrcontroller.utils.net.ServerSocketThread;
 
 import java.util.ArrayList;
@@ -22,10 +21,12 @@ import java.util.List;
  */
 
 public class Variable {
+    public static int DEVICEMODE = 0;
     public static Context BASECONTEXT;
     public static LoginBean loginBean;
     public static FindUsersBean mfindUsersBean;
     public static String userName;
+    public static String offlineChairList;
     public static List<FindUsersBean.ChairBean> chairs;
     public static List<ChairStatusBean> chairsStatusBeen;
     public static ArrayList<DeviceBean> devices = new ArrayList<DeviceBean>();
@@ -39,7 +40,15 @@ public class Variable {
     public static String oldMsg = null;
 
     public static String getChairList() {
+        if(Variable.DEVICEMODE == Constants.MODE_OFF_LINE)
+            return offlineChairList;
+        if(loginBean == null || loginBean.getUser_info() == null)
+            return null;
         return loginBean.getUser_info().get(0).getEgg_chair_id();
+    }
+
+    public static void setOfflineChairList(String chairList){
+        offlineChairList = chairList;
     }
 
     /**
@@ -277,13 +286,13 @@ public class Variable {
             else
                 j++;
         }
-        if(i > 0)
-            setChairVideoTypeByChairChairNum(eggNum,Constants.VIDEO_TYPE_PANORAMAVIDEO);
-        else if(j == devicesBean.size())
-            setChairVideoTypeByChairChairNum(eggNum,Constants.VIDEO_TYPE_ORDINARYVIDEO);
+        if (i > 0)
+            setChairVideoTypeByChairChairNum(eggNum, Constants.VIDEO_TYPE_PANORAMAVIDEO);
+        else if (j == devicesBean.size())
+            setChairVideoTypeByChairChairNum(eggNum, Constants.VIDEO_TYPE_ORDINARYVIDEO);
     }
 
-    public static void setVideoCurrentTimeByEggNum(String eggChairNum,long currentTime){
+    public static void setVideoCurrentTimeByEggNum(String eggChairNum, long currentTime) {
         int index = 0;
         for (ChairStatusBean chairStatusBean :
                 chairsStatusBeen) {

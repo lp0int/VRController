@@ -47,7 +47,11 @@ public class ProgressDialogHandler extends Handler {
                 });
             }
             if (!pd.isShowing())
-                pd.show();
+                try {
+                    pd.show();
+                }catch (Exception e){
+
+                }
         }
     }
 

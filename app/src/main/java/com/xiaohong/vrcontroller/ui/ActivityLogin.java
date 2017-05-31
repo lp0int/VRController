@@ -17,6 +17,7 @@ import com.xiaohong.vrcontroller.utils.NetworkRequestMethods;
 import com.xiaohong.vrcontroller.utils.ProgressSubscriber;
 import com.xiaohong.vrcontroller.utils.SharedPreferencesUtils;
 import com.xiaohong.vrcontroller.utils.Utils;
+import com.xiaohong.vrcontroller.utils.widget.PopWindowOfflineLogin;
 
 public class ActivityLogin extends BaseActivity implements View.OnClickListener {
     private EditText edtUserName;
@@ -62,6 +63,7 @@ public class ActivityLogin extends BaseActivity implements View.OnClickListener 
                     SharedPreferencesUtils.setStringValue(ActivityLogin.this, Constants.LOGIN_STATUS, Constants.EGG_CHAIR_ID, mLoginBean.getUser_info().get(0).getEgg_chair_id());
                     SharedPreferencesUtils.setStringValue(ActivityLogin.this, Constants.LOGIN_STATUS, Constants.PHONE, mLoginBean.getUser_info().get(0).getPhone());
                     Variable.userName = edtUserName.getText().toString();
+                    Variable.DEVICEMODE = Constants.MODE_ONLINE;
                     Intent intent = new Intent(ActivityLogin.this, ActivityHome.class);
                     startActivity(intent);
                 }
@@ -69,7 +71,7 @@ public class ActivityLogin extends BaseActivity implements View.OnClickListener 
 
             @Override
             public void onError(Throwable e) {
-
+                doOffLineMode();
             }
         };
     }
@@ -80,6 +82,12 @@ public class ActivityLogin extends BaseActivity implements View.OnClickListener 
         username = edtUserName.getText().toString();
         passwd = edtPasswd.getText().toString();
         NetworkRequestMethods.getInstance().login(new ProgressSubscriber<LoginBean>(LoginListener, ActivityLogin.this, "努力登录中..."), username, passwd);
+    }
+
+    private void doOffLineMode(){
+        PopWindowOfflineLogin popWindowOfflineLogin = new PopWindowOfflineLogin(ActivityLogin.this);
+        popWindowOfflineLogin.showPopupWindow(getWindow().getDecorView());
+        Variable.DEVICEMODE = Constants.MODE_OFF_LINE;
     }
 
     @Override

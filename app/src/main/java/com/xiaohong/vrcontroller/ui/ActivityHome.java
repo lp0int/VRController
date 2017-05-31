@@ -31,6 +31,7 @@ import com.xiaohong.vrcontroller.bean.RequestObject;
 import com.xiaohong.vrcontroller.utils.DebugTools;
 import com.xiaohong.vrcontroller.utils.NetworkRequestMethods;
 import com.xiaohong.vrcontroller.utils.ProgressSubscriber;
+import com.xiaohong.vrcontroller.utils.SharedPreferencesUtils;
 import com.xiaohong.vrcontroller.utils.Utils;
 import com.xiaohong.vrcontroller.utils.net.MsgFactory;
 import com.xiaohong.vrcontroller.utils.net.ServerSocketThread;
@@ -80,15 +81,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
         relTab4 = (RelativeLayout) findViewById(R.id.rel_tab4);
         relTab4.setOnClickListener(this);
         txtNickname = (TextView) findViewById(R.id.txt_nickname);
-        txtNickname.setText(TextUtils.isEmpty(Variable.loginBean.getUser_info().get(0).getNickName())
-                ? "" : Variable.loginBean.getUser_info().get(0).getNickName());
         txtNickname.setOnClickListener(this);
-        if (!Variable.loginBean.getUser_info().get(0).getEgg_chair_id().startsWith("0")) {
-            relTab2.setVisibility(View.GONE);
-            relTab4.setVisibility(View.GONE);
-        } else {
-            relTab3.setVisibility(View.GONE);
-        }
         imgLogout = (ImageView) findViewById(R.id.img_logout);
         imgLogout.setOnClickListener(this);
         imgHelp = (ImageView) findViewById(R.id.img_help);
@@ -96,9 +89,31 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
         viewCover = findViewById(R.id.view_cover);
         initRequestListenter();
         startTCPServer();
-        NetworkRequestMethods.getInstance().findUser(new ProgressSubscriber<FindUsersBean>(findUserListener, this, "获取用户信息中..."));
+        initSendUdpThread();
         initFragment();
-        tabSelect(0);
+        if (Variable.DEVICEMODE == Constants.MODE_OFF_LINE) {
+            txtNickname.setText(Variable.userName);
+            relTab1.setVisibility(View.INVISIBLE);
+            relTab2.setVisibility(View.GONE);
+            relTab4.setVisibility(View.GONE);
+            sendUdpThread.start();
+            startUpdate();
+            tabSelect(2);
+        } else {
+            txtNickname.setText(TextUtils.isEmpty(Variable.loginBean.getUser_info().get(0).getNickName())
+                    ? "" : Variable.loginBean.getUser_info().get(0).getNickName());
+            NetworkRequestMethods.getInstance().findUser(new ProgressSubscriber<FindUsersBean>(findUserListener, this, "获取用户信息中..."));
+            if (!Variable.loginBean.getUser_info().get(0).getEgg_chair_id().startsWith("0")) {
+                relTab2.setVisibility(View.GONE);
+                relTab4.setVisibility(View.GONE);
+            } else {
+                relTab3.setVisibility(View.GONE);
+            }
+            tabSelect(0);
+        }
+    }
+
+    private void initSendUdpThread() {
         sendUdpThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -110,8 +125,12 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
                     PadDeviceInfo padDeviceInfo = new PadDeviceInfo();
                     padDeviceInfo.setTcpPort(Constants.TCP_PORT);
                     padDeviceInfo.setIp(Utils.getLocalIpAddress(ActivityHome.this));
+                    if (Variable.getChairList() == null)
+                        return;
                     String[] strs = Variable.getChairList().split(",");
                     if (strs.length == 1) {
+                        if(TextUtils.isEmpty(strs[0]))
+                            return;
                         ArrayList<String> arrstr = new ArrayList<String>();
                         arrstr.add(Variable.getChairNumById(Integer.parseInt(strs[0])));
                         padDeviceInfo.setEggChairList(arrstr);
@@ -257,7 +276,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
                 tabSelect(3);
                 break;
             case R.id.img_logout:
-                finish();
+                logout();
                 break;
             case R.id.txt_nickname:
                 PopWindowEditMyPwd popWindowEditMyPwd = new PopWindowEditMyPwd(ActivityHome.this, editPwdInfoListener);
@@ -279,6 +298,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
         findUserListener = new SubscriberOnNextListener<FindUsersBean>() {
             @Override
             public void onNext(FindUsersBean findUsersBean) {
+                SharedPreferencesUtils.setStringValue(ActivityHome.this, Constants.DEVICE_INFO, Constants.CHAIR_LIST, MsgFactory.getInstance(ActivityHome.this).mGson.toJson(findUsersBean));
                 Variable.setFindUserBean(findUsersBean);
                 if (!Variable.loginBean.getUser_info().get(0).getEgg_chair_id().startsWith("0")) {
                     sendUdpThread.start();
@@ -288,6 +308,7 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
 
             @Override
             public void onError(Throwable e) {
+
             }
         };
         editPwdInfoListener = new SubscriberOnNextListener<EditUserBean>() {
@@ -364,5 +385,15 @@ public class ActivityHome extends BaseActivity implements View.OnClickListener {
         };
 
         timer.schedule(task, 10 * 1000, 10 * 60 * 1000);
+    }
+
+    private void logout() {
+        Variable.loginBean = null;
+        Variable.mfindUsersBean = null;
+        Variable.userName = null;
+        Variable.chairs.clear();
+        Variable.chairsStatusBeen.clear();
+        Variable.devices.clear();
+        finish();
     }
 }
