@@ -19,6 +19,7 @@ import com.xiaohong.vrcontroller.utils.NetworkRequestMethods;
 import com.xiaohong.vrcontroller.utils.ProgressSubscriber;
 import com.xiaohong.vrcontroller.utils.Utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -107,6 +108,21 @@ public class MsgFactory {
                 DeviceBean deviceBean = Variable.getDevicesByIp(ip);
                 deviceBean.getVRDeviceInfo().setRemainingPower(Integer.parseInt(power));
                 Variable.setDeviceInfoByIp(ip, deviceBean.getVRDeviceInfo());
+
+                RequestObject heartRequestObject = new RequestObject();
+                heartRequestObject.setRequestObjectType(0x05);
+                heartRequestObject.setRequestObjectJson(time);
+                byte[] data = MsgFactory.getInstance(mContext).mGson.toJson(heartRequestObject).getBytes();
+                byte[] msg_length = Utils.int2byte(data.length);
+                byte[] send_data = new byte[data.length + msg_length.length];
+                System.arraycopy(msg_length, 0, send_data, 0, msg_length.length);
+                System.arraycopy(data, 0, send_data, msg_length.length, data.length);
+                try {
+                    DebugTools.showDebugLog("tcp 发出TCP消息：", new String(send_data));
+                    Variable.getDevicesByIp(ip).getDeviceSocket().getOutputStream().write(send_data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             default:
                 break;

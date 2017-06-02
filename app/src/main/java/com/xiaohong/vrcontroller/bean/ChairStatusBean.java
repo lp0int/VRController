@@ -11,6 +11,8 @@ public class ChairStatusBean {
     private long playVideoTime;
     private int playVideoType;
     private long currentTime;
+    private Thread chairThread;
+    private long uploadTime;
 
     public FindUsersBean.ChairBean getChair() {
         return chair;
@@ -34,6 +36,7 @@ public class ChairStatusBean {
 
     public void setPlayVideoType(int playVideoType) {
         this.playVideoType = playVideoType;
+        chairThread = null;
     }
 
     public long getCurrentTime() {
@@ -42,5 +45,21 @@ public class ChairStatusBean {
 
     public void setCurrentTime(long currentTime) {
         this.currentTime = currentTime;
+    }
+
+    public Thread getChairThread() {
+        return chairThread;
+    }
+
+    public void setChairThread(Thread chairThread) {
+        this.chairThread = chairThread;
+    }
+
+    public long getUploadTime() {
+        return uploadTime;
+    }
+
+    public void setUploadTime(long uploadTime) {
+        this.uploadTime = uploadTime;
     }
 }

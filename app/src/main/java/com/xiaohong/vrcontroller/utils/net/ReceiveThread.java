@@ -44,10 +44,10 @@ public class ReceiveThread extends Thread {
                 }
                 byte[] data = new byte[len];
                 System.arraycopy(buf,0,data,0,len);
-                MsgFactory.getInstance(mContext).handleTcpMsg(ip,data);
                 byte[] data_length = new byte[4];
                 System.arraycopy(buf, 0, data_length, 0, 4);
                 DebugTools.showDebugLog("tcp", "收到TCP消息：" + Utils.byte2int(data_length) + new String(buf,4,Utils.byte2int(data_length)));
+                MsgFactory.getInstance(mContext).handleTcpMsg(ip,data);
             } catch (Exception e) {
                 DebugTools.showDebugLog("tcpServerException", "tcpServer receiveMsg error:" + e.getMessage());
             }

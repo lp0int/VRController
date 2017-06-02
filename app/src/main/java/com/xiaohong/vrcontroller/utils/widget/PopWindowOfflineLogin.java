@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -97,8 +98,16 @@ public class PopWindowOfflineLogin extends PopupWindow implements View.OnClickLi
                 dismiss();
                 String findUsersBeanStr = SharedPreferencesUtils.getStringValue(context, Constants.DEVICE_INFO, Constants.CHAIR_LIST, "");
                 Variable.setFindUserBean(MsgFactory.getInstance(context).mGson.fromJson(findUsersBeanStr, FindUsersBean.class));
-                PopWindowEditEggChairOffLine popWindowEditEggChairOffLine = new PopWindowEditEggChairOffLine(context,Variable.userName);
-                popWindowEditEggChairOffLine.showPopupWindow(v);
+                String adminUser = "";
+                for (FindUsersBean.FindUserBean findUserBean :
+                        Variable.mfindUsersBean.getFindUser()) {
+                    if (findUserBean.getEgg_chair_id() == "0")
+                        adminUser = findUserBean.getUserName();
+                }
+                if (!TextUtils.isEmpty(adminUser) && edtAdmin.getText().toString().equals(adminUser)) {
+                    PopWindowEditEggChairOffLine popWindowEditEggChairOffLine = new PopWindowEditEggChairOffLine(context, Variable.userName);
+                    popWindowEditEggChairOffLine.showPopupWindow(v);
+                }
                 break;
             default:
                 break;

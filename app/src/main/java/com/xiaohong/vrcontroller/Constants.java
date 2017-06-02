@@ -8,7 +8,7 @@ public class Constants {
     public static final int MODE_OFF_LINE = 0x02;
     public static final int MODE_ONLINE = 0x01;
 
-    public static final String BASE_URL = "http://vr.jinkechen.com/";
+    public static final String BASE_URL = "http://10.0.0.101/";
     public static final int DEFAULT_TIMEOUT  = 20;
     public static final String nullEggChairId = "100000000";
     public static final String USER_DEFAULT_PWD = "123456";
